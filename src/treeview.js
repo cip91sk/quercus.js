@@ -9,10 +9,12 @@
  * Optional "Select All/Deselect All" and "Expand All/Collapse All" buttons.
  * Custom Node Rendering via onRenderNode callback.
  * Option to disable node selection.
- * Option to cascade selection to children when a parent is selected (only if multiSelectEnabled is false).
+ * Option to cascade selection to children when a parent is selected.
+ * - If `multiSelectEnabled` is false, it's a single-select cascade (selects node and children, clears others).
+ * - If `multiSelectEnabled` is true, it's a multi-select cascade (adds node and children to selection).
  * Option to display checkboxes for node selection, positioned between expander and label.
+ * Support for initial selection via data and programmatic selection via selectNodeById.
  */
-
 (function () { // Anonymous IIFE for encapsulation
 
     /**
@@ -83,6 +85,7 @@
                 });
             }
 
+            // Handle initial selection from data after rendering the tree
             if (this.options.nodeSelectionEnabled) {
                 const initiallySelectedNodeIds = [];
                 // Recursively find all initially selected nodes
@@ -151,8 +154,8 @@
             const buttonContainer = document.createElement('div');
             buttonContainer.classList.add('treeview-button-container');
 
-            // Select All button shows if multi-select and node selection are enabled, AND cascadeSelectChildren is NOT enabled
-            if (this.options.showSelectAllButton && this.options.multiSelectEnabled && this.options.nodeSelectionEnabled && !this.options.cascadeSelectChildren) {
+            // Select All button now shows if multi-select and node selection are enabled
+            if (this.options.showSelectAllButton && this.options.multiSelectEnabled && this.options.nodeSelectionEnabled) {
                 this.selectAllButton = document.createElement('button');
                 this.selectAllButton.classList.add('treeview-control-button', 'treeview-select-all');
                 this.selectAllButton.textContent = 'Select All';
@@ -192,9 +195,9 @@
                 console.warn("Quercus.js: Select All/Deselect All requires multi-select to be enabled.");
                 return;
             }
-            // Defensive check for cascadeSelectChildren: This button should not be active if cascade selection is on.
+            // Defensive check for cascading options: This button should not be active if cascading selection is on.
             if (this.options.cascadeSelectChildren) {
-                console.warn("Quercus.js: Select All/Deselect All is not applicable when cascadeSelectChildren is enabled.");
+                console.warn("Quercus.js: Select All/Deselect All is not applicable when cascading selection is enabled.");
                 return;
             }
 
@@ -290,7 +293,6 @@
                 const nodeContentWrapper = document.createElement('div');
                 nodeContentWrapper.classList.add('treeview-node-content');
 
-                // NEW ORDER:
                 // 1. Create and add the node's main content (text or custom rendering) first
                 if (typeof this.options.onRenderNode === 'function') {
                     try {
@@ -329,8 +331,10 @@
                     checkbox.type = 'checkbox';
                     checkbox.classList.add('treeview-checkbox');
                     checkbox.id = `checkbox-${node.id}`; // Give it an ID for potential <label for> later
-                    // Initial state of checkbox based on selection (if any previously, e.g., on setData)
-                    if (this.selectedNodes.has(li)) {
+                    // Initial state of checkbox will be set by _selectNode in _initialize
+                    // No need to set checkbox.checked here based on node.selected directly,
+                    // as _selectNode will handle it consistently.
+                    if (this.selectedNodes.has(li)) { // Ensure checkbox state matches initial selection from _initialize
                         checkbox.checked = true;
                     }
 
@@ -428,9 +432,30 @@
                 }
             }
 
-
-            if (this.options.multiSelectEnabled) {
-                // Multi-select behavior: Add or remove based on isSelected
+            // Case 1: Cascading multi-select (selects node and all children, parents remain selected)
+            if (this.options.cascadeSelectChildren && this.options.multiSelectEnabled) {
+                if (isSelected) {
+                    // Select the clicked node and all its descendants
+                    const descendants = this._getAllDescendants(nodeElement);
+                    [nodeElement, ...descendants].forEach(targetLi => {
+                        this.selectedNodes.add(targetLi);
+                        targetLi.classList.add('selected');
+                        const targetCheckbox = targetLi.querySelector('.treeview-checkbox');
+                        if (targetCheckbox) targetCheckbox.checked = true;
+                    });
+                } else { // Deselecting in this mode
+                    // Deselect the clicked node and all its descendants
+                    const descendants = this._getAllDescendants(nodeElement);
+                    [nodeElement, ...descendants].forEach(targetLi => {
+                        this.selectedNodes.delete(targetLi);
+                        targetLi.classList.remove('selected');
+                        const targetCheckbox = targetLi.querySelector('.treeview-checkbox');
+                        if (targetCheckbox) targetCheckbox.checked = false;
+                    });
+                }
+            }
+            // Case 2: Standard multi-select (no cascading)
+            else if (this.options.multiSelectEnabled) { // This means multiSelectEnabled is true, but cascadeSelectChildren is false
                 if (isSelected) {
                     this.selectedNodes.add(nodeElement);
                     nodeElement.classList.add('selected');
@@ -440,8 +465,9 @@
                     nodeElement.classList.remove('selected');
                     if (checkbox) checkbox.checked = false;
                 }
-            } else {
-                // Single-select behavior (including cascadeSelectChildren logic)
+            }
+            // Case 3: Single-select (with or without cascading children)
+            else { // This means multiSelectEnabled is false
                 // Always clear all previously selected nodes before setting the new one
                 this.selectedNodes.forEach(node => node.classList.remove('selected'));
                 this.selectedNodes.clear();
@@ -450,13 +476,12 @@
                     this.treeviewContainer.querySelectorAll('.treeview-checkbox').forEach(cb => cb.checked = false);
                 }
 
-                // Only select the clicked node and its children if isSelected is true (i.e., checkbox was checked)
                 if (isSelected) {
                     this.selectedNodes.add(nodeElement);
                     nodeElement.classList.add('selected');
                     if (checkbox) checkbox.checked = true;
 
-                    // Apply cascading selection ONLY if cascadeSelectChildren is true AND multiSelectEnabled is false
+                    // Apply cascading selection ONLY if cascadeSelectChildren is true AND multiSelectEnabled is false (which is this 'else' block's context)
                     if (this.options.cascadeSelectChildren) {
                         const descendants = this._getAllDescendants(nodeElement);
                         descendants.forEach(descendantLi => {
@@ -486,7 +511,7 @@
             }
             // Update Select All button text based on current selection state
             // Condition no longer requires checkboxSelectionEnabled to be true
-            if (this.selectAllButton && this.options.multiSelectEnabled && this.options.nodeSelectionEnabled) {
+            if (this.selectAllButton && this.options.multiSelectEnabled && this.options.nodeSelectionEnabled && !this.options.cascadeSelectChildren) {
                 const allSelectableNodes = this.treeviewContainer.querySelectorAll('li');
                 // Consider only nodes that *should* be selectable via checkbox (i.e., all of them)
                 const isAllSelected = allSelectableNodes.length > 0 && this.selectedNodes.size === allSelectableNodes.length;
@@ -597,6 +622,28 @@
                     ul.style.height = 'auto';
                 });
             }
+            // Re-apply initial selections if any after setData
+            if (this.options.nodeSelectionEnabled) {
+                const initiallySelectedNodeIds = [];
+                const findInitiallySelected = (nodes) => {
+                    nodes.forEach(node => {
+                        if (node.selected) {
+                            initiallySelectedNodeIds.push(node.id);
+                        }
+                        if (node.children) {
+                            findInitiallySelected(node.children);
+                        }
+                    });
+                };
+                findInitiallySelected(this.options.data);
+
+                initiallySelectedNodeIds.forEach(id => {
+                    const nodeElement = this.treeviewContainer.querySelector(`[data-id="${id}"]`);
+                    if (nodeElement) {
+                        this._selectNode(nodeElement, true);
+                    }
+                });
+            }
         }
 
         /**
@@ -604,7 +651,6 @@
          * @param {string} id The ID of the node to select/deselect.
          * @param {boolean} [shouldSelect=true] True to select the node, false to deselect.
          */
-
         selectNodeById(id, shouldSelect = true) {
             if (!this.options.nodeSelectionEnabled) {
                 console.warn(`Quercus.js: Cannot programmatically select node '${id}'. Node selection is disabled.`);

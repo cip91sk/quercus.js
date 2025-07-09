@@ -147,6 +147,13 @@
   <pre id="output5" class="tree-output"></pre>
 </div>
 
+<p class="section-header">Treeview 6: Multi Select with Cascade Children</p>
+<div id="myTreeview6" class="my-treeview-container"></div>
+<div id="tree-output6" style="text-align: center; display: none;">
+  <div id="label6" style="margin-bottom: 6px; font-weight: bold;"></div>
+  <pre id="output6" class="tree-output"></pre>
+</div>
+
 
 
 
@@ -449,6 +456,52 @@
 
         });
         document.getElementById('output5').textContent = 'Selected (Tree 5):';
+
+        // Initialize Treeview 6: Multi-Select with Cascade Children
+        window.tree6 = new Treeview({
+            containerId: 'myTreeview6',
+            data: treeData,
+            searchEnabled: false,
+            initiallyExpanded: true,
+            multiSelectEnabled: true, // Must be true for multiple cascading children
+            nodeSelectionEnabled: true, // Ensure node selection is enabled
+            cascadeSelectChildren: true, // Enable cascading selection
+          onSelectionChange: (selectedNodes) => {
+            const names = selectedNodes.map(n => `"${n.name}"`);
+            const label = document.getElementById('label6');
+            const output = document.getElementById('output6');
+            const wrapper = document.getElementById('tree-output6');
+            const count = names.length;
+            const opts = window.tree6.options;
+
+            if (count === 0) {
+              wrapper.style.display = 'none';
+              return;
+            }
+
+            wrapper.style.display = 'block';
+
+            let modeLabel = '';
+            if (opts.cascadeSelectChildren) {
+              modeLabel = 'Cascade Children Mode';
+            } else if (opts.multiSelectEnabled) {
+              modeLabel = 'Multi Selection Mode';
+            } else {
+              modeLabel = 'Single Selection Mode';
+            }
+
+            const nodeWord = count === 1 ? 'Node' : 'Nodes';
+            const countLabel = opts.multiSelectEnabled || opts.cascadeSelectChildren
+                    ? `${count} ${nodeWord} selected`
+                    : `Node selected`;
+
+            label.textContent = `${modeLabel}, ${countLabel}:`;
+            output.textContent = `[${names.join(', ')}]`;
+          }
+
+
+        });
+        document.getElementById('output6').textContent = 'Selected (Tree 6):';
 
     });
 </script>
