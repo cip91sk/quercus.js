@@ -1,5 +1,3 @@
-// treeview.js
-
 /**
  * Quercus.js: A Lightweight and Customizable JavaScript Treeview Library
  *
@@ -14,6 +12,7 @@
  * Option to cascade selection to children when a parent is selected (only if multiSelectEnabled is false).
  * Option to display checkboxes for node selection, positioned between expander and label.
  */
+
 (function () { // Anonymous IIFE for encapsulation
 
     /**
@@ -83,6 +82,31 @@
                     ul.style.height = 'auto';
                 });
             }
+
+            if (this.options.nodeSelectionEnabled) {
+                const initiallySelectedNodeIds = [];
+                // Recursively find all initially selected nodes
+                const findInitiallySelected = (nodes) => {
+                    nodes.forEach(node => {
+                        if (node.selected) {
+                            initiallySelectedNodeIds.push(node.id);
+                        }
+                        if (node.children) {
+                            findInitiallySelected(node.children);
+                        }
+                    });
+                };
+                findInitiallySelected(this.options.data);
+
+                // Process initial selections. _selectNode handles multi/single/cascade logic.
+                // If multiSelectEnabled is false, only the last one processed will remain selected.
+                initiallySelectedNodeIds.forEach(id => {
+                    const nodeElement = this.treeviewContainer.querySelector(`[data-id="${id}"]`);
+                    if (nodeElement) {
+                        this._selectNode(nodeElement, true); // Force select
+                    }
+                });
+            }
         }
 
         /**
@@ -127,7 +151,7 @@
             const buttonContainer = document.createElement('div');
             buttonContainer.classList.add('treeview-button-container');
 
-            // Select All button now shows if multi-select and node selection are enabled, AND cascadeSelectChildren is NOT enabled
+            // Select All button shows if multi-select and node selection are enabled, AND cascadeSelectChildren is NOT enabled
             if (this.options.showSelectAllButton && this.options.multiSelectEnabled && this.options.nodeSelectionEnabled && !this.options.cascadeSelectChildren) {
                 this.selectAllButton = document.createElement('button');
                 this.selectAllButton.classList.add('treeview-control-button', 'treeview-select-all');
@@ -572,6 +596,25 @@
                 this.treeviewContainer.querySelectorAll('li.expanded > ul').forEach(ul => {
                     ul.style.height = 'auto';
                 });
+            }
+        }
+
+        /**
+         * Public method to programmatically select or deselect a node by its ID.
+         * @param {string} id The ID of the node to select/deselect.
+         * @param {boolean} [shouldSelect=true] True to select the node, false to deselect.
+         */
+
+        selectNodeById(id, shouldSelect = true) {
+            if (!this.options.nodeSelectionEnabled) {
+                console.warn(`Quercus.js: Cannot programmatically select node '${id}'. Node selection is disabled.`);
+                return;
+            }
+            const nodeElement = this.treeviewContainer.querySelector(`[data-id="${id}"]`);
+            if (nodeElement) {
+                this._selectNode(nodeElement, shouldSelect);
+            } else {
+                console.warn(`Quercus.js: Node with ID '${id}' not found for programmatic selection.`);
             }
         }
 

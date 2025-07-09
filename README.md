@@ -88,7 +88,7 @@ const myTreeData = [
             {
                 id: '1.1', name: 'Reports', children: [
                     {id: '1.1.1', name: 'Q1 Sales'},
-                    {id: '1.1.2', name: 'Q2 Marketing'}
+                    {id: '1.1.2', name: 'Q2 Marketing', 'selected': true}
                 ]
             },
             {
@@ -196,6 +196,15 @@ You can interact with your `Treeview` instance after it's been initialized:
 * **`getSelectedNodes(): Array<Object>`**
   Returns an array containing the data objects of all currently selected nodes. The array will be empty if no nodes are
   selected.
+
+* **`selectNodeById(id: string, shouldSelect: boolean = true): void`**
+    Programmatically selects or deselects a specific node by its unique `id`.
+    * `id`: The `id` of the node to target.
+    * `shouldSelect`: A boolean indicating whether to select (`true`, default) or deselect (`false`) the node.
+    ```javascript
+    tree1.selectNodeById('doc-alpha', true);  // Selects the node with ID 'doc-alpha'
+    tree1.selectNodeById('doc-beta', false); // Deselects the node with ID 'doc-beta'
+    ```
 
 * **`search(searchTerm: string): void`**
   Programmatically performs a search on the treeview. The search input field will also update.
