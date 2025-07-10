@@ -1,0 +1,18 @@
+graph TD
+    A[_selectNode] --> B{nodeSelectionEnabled?}
+    B -- No --> C[Warning: Selection disabled]
+    B -- Yes --> D[Check Checkbox Status]
+
+    D --> E{cascadeSelectChildren &&<br>multiSelectEnabled?}
+    E -- Yes --> F1[Cascading Multi-Select]
+    E -- No --> G
+
+    G{multiSelectEnabled?}
+    G -- Yes --> H[Standard Multi-Select]
+    G -- No --> I[Single-Select]
+
+    F1 --> J[Trigger Selection Change]
+    H --> J
+    I --> J
+
+    J --> K[Update Select All Button]

@@ -1,0 +1,26 @@
+graph TD
+    A[Node Rendering Start] --> B[Create Li Element]
+    B --> C[Create Content Wrapper]
+    
+    C --> D{onRenderNode exists?}
+    D -- Yes --> E1[Custom Rendering]
+    D -- No --> E2[Standard Text Rendering]
+    
+    E1 --> F
+    E2 --> F
+    
+    F[Create Expander/Placeholder]
+    F --> G{checkboxSelectionEnabled?}
+    G -- Yes --> H[Add Checkbox]
+    G -- No --> I
+    
+    I{has Children?}
+    I -- Yes --> J1[Render Children]
+    I -- No --> K
+    
+    J1 --> J2[Expander Events]
+    J2 --> K
+    
+    K{nodeSelectionEnabled &&<br>!checkboxSelectionEnabled?}
+    K -- Yes --> L1[Add Click Handler]
+    K -- No --> L2[No Click Handler]
