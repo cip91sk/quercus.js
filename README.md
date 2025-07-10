@@ -35,7 +35,7 @@ Features
 * **Customizable:** Easy to style with standard CSS.
 * **Custom Node Rendering:** Nodes can be rendered using HTML and CSS based on their attributes.
 * **Controls:** Control buttons for selecting/deselecting, expanding/collapsing the nodes.
-* **Lightweight:** No external dependencies.
+* **Lightweight:** Only one .js and one .css file. No external dependencies.
 
 ---
 
@@ -82,10 +82,11 @@ arrays for nesting.
 | **Key**     | **Type**         | **Optional** | **Description**                                                                                                                                    |
 |-------------|------------------|--------------|----------------------------------------------------------------------------------------------------------------------------------------------------|
 | `id`        | string           | Yes          | A unique identifier for the node. This is necessary if you intend to programmatically select or deselect nodes using `selectNodeById()`.           |
-| `name`      | string           | Yes          | The default text displayed as the node's label. This can be customized or overridden using the `onRenderNode` callback.                            |
+| `name`      | string           | Yes          | The label text displayed for the node. It can be customized using the `onRenderNode` callback. This field is also used for search functionality.   |
 | `children`  | Array<Object>    | Yes          | An array of child node objects. If present, the node will be rendered as an expandable parent node.                                                |
 | `selected`  | boolean          | Yes          | If set to `true`, the node will be initially selected when the treeview is rendered or when its data is updated via `setData()`.                   |
 
+Your data can contain any other keys and values, arrays etc. 
 
 ```javascript
 const myTreeData = [
@@ -96,7 +97,7 @@ const myTreeData = [
             {
                 id: '1.1', name: 'Reports', children: [
                     {id: '1.1.1', name: 'Q1 Sales'},
-                    {id: '1.1.2', name: 'Q2 Marketing', 'selected': true}
+                    {id: '1.1.2', name: 'Q2 Marketing', selected: true}
                 ]
             },
             {
@@ -331,21 +332,27 @@ without inheriting the highlight style.
 
 ```mermaid
 graph TD
-    A[Treeview Instantiated] --> B{Options.containerId provided?}
-    B -- No --> A_FAIL[Error: containerId missing]
-    B -- Yes --> C[Initialize Container and Controls]
-    C --> D{Options.searchEnabled?}
-    D -- Yes --> D1[Render Search Input]
-    D -- No --> D2[Skip Search Input]
-    C --> E{showSelectAllButton AND<br>multiSelectEnabled AND<br>nodeSelectionEnabled AND<br>NOT cascadeSelectChildren?}
-    E -- Yes --> E1[Render SelectAll Button]
-    E1 --> E_HANDLER[Attach toggleSelectAll Handler]
-    E -- No --> E2[Skip SelectAll Button]
-    C --> F{showExpandCollapseAllButtons?}
-    F -- Yes --> F1[Render Expand/Collapse All Buttons]
-    F1 --> F_HANDLER[Attach expandAll and collapseAll Handlers]
-    F -- No --> F2[Skip Expand/Collapse All Buttons]
-    C --> G["Render Tree Nodes (renderTree)"]
+    A[Treeview Constructor] --> B{containerId exists?}
+    B -- No --> B_ERR[Error: containerId required]
+    B -- Yes --> C[Initialize Container]
+    C --> D[Create Controls]
+    
+    D --> E1{searchEnabled?}
+    E1 -- Yes --> E2[Create Search Field]
+    E1 -- No --> F1
+    
+    F1{showSelectAllButton &&<br>multiSelectEnabled &&<br>nodeSelectionEnabled?}
+    F1 -- Yes --> F2[Create Select All Button]
+    F1 -- No --> G1
+    
+    G1{showExpandCollapseAllButtons?}
+    G1 -- Yes --> G2[Create Expand/Collapse Buttons]
+    G1 -- No --> H
+    
+    H[Render Tree _renderTree]
+    H --> I{initiallyExpanded?}
+    I -- Yes --> J[Expand All Nodes]
+    I -- No --> K[Process Initial Selection]
 
 ```
 
@@ -353,67 +360,54 @@ graph TD
 
 ```mermaid
 graph TD
-    G1[Create node and wrapper]
-    G2{onRenderNode function?}
-    G3[Call onRenderNode to populate wrapper]
-    G4[Add default node text]
-    G5[Prepend Expander or Placeholder]
-    H{checkboxSelectionEnabled?}
-    H1[Create Checkbox]
-    H2[Insert Checkbox]
-    H3[Attach Checkbox handler]
-    H4[Skip Checkbox]
-    I[Append wrapper to '<li>']
-    J{Node has children?}
-    J1[Call renderTree for children]
-    J2[Attach Expander handler]
-    J3[No children]
-    K{nodeSelectionEnabled AND NOT checkboxSelectionEnabled?}
-    K1[Attach click handler to wrapper]
-    K2[Skip click handler]
-    L[Node Rendered]
-    G1 --> G2
-    G2 -- Yes --> G3 --> G5
-    G2 -- No --> G4 --> G5
-    G5 --> H
-    H -- Yes --> H1 --> H2 --> H3 --> I
-    H -- No --> H4 --> I
-    I --> J
-    J -- Yes --> J1 --> J2 --> K
-    J -- No --> J3 --> K
-    K -- Yes --> K1 --> L
-    K -- No --> K2 --> L
+    A[Node Rendering Start] --> B[Create Li Element]
+    B --> C[Create Content Wrapper]
+    
+    C --> D{onRenderNode exists?}
+    D -- Yes --> E1[Custom Rendering]
+    D -- No --> E2[Standard Text Rendering]
+    
+    E1 --> F
+    E2 --> F
+    
+    F[Create Expander/Placeholder]
+    F --> G{checkboxSelectionEnabled?}
+    G -- Yes --> H[Add Checkbox]
+    G -- No --> I
+    
+    I{has Children?}
+    I -- Yes --> J1[Render Children]
+    I -- No --> K
+    
+    J1 --> J2[Expander Events]
+    J2 --> K
+    
+    K{nodeSelectionEnabled &&<br>!checkboxSelectionEnabled?}
+    K -- Yes --> L1[Add Click Handler]
+    K -- No --> L2[No Click Handler]
 ```
 
 ### SelectNode `selectNode(nodeElement, isSelected)`
 
 ```mermaid
 graph TD
-    M[Call selectNode]
-    M1{nodeSelectionEnabled?}
-    M_WARN[Selection disabled]
-    N{multiSelectEnabled?}
-    O{isSelected?}
-    O1[Add node to selectedNodes]
-    O2[Remove node from selectedNodes]
-    P[Trigger onSelectionChange]
-    Q[Clear previous selections]
-    R{isSelected?}
-    R1[Add node to selectedNodes]
-    S{cascadeSelectChildren?}
-    S1[Find all descendants]
-    S2[Select descendants]
-    M --> M1
-    M1 -- No --> M_WARN
-    M1 -- Yes --> N
-    N -- Yes --> O
-    O -- Yes --> O1 --> P
-    O -- No --> O2 --> P
-    N -- No --> Q --> R
-    R -- Yes --> R1 --> S
-    S -- Yes --> S1 --> S2 --> P
-    S -- No --> P
-    R -- No --> P
+    A[_selectNode] --> B{nodeSelectionEnabled?}
+    B -- No --> C[Warning: Selection disabled]
+    B -- Yes --> D[Check Checkbox Status]
+    
+    D --> E{cascadeSelectChildren &&<br>multiSelectEnabled?}
+    E -- Yes --> F1[Cascading Multi-Select]
+    E -- No --> G
+    
+    G{multiSelectEnabled?}
+    G -- Yes --> H[Standard Multi-Select]
+    G -- No --> I[Single-Select]
+    
+    F1 --> J[Trigger Selection Change]
+    H --> J
+    I --> J
+    
+    J --> K[Update Select All Button]
 ```
 
 ## License
