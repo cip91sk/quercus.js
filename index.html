@@ -116,7 +116,7 @@
 <p class="section-header">Treeview 1: Default tree, Node Selection Disabled</p>
 <div id="myTreeview1" class="my-treeview-container"></div>
 
-<p class="section-header">Treeview 2: Multi-Select, Select All/Deselect All Button, Default Rendering</p>
+<p class="section-header">Treeview 2: Multi-Select, Select All/Deselect All Button, Default Rendering, Custom Search Placeholder</p>
 <div id="myTreeview2" class="my-treeview-container"></div>
 <div id="tree-output2" style="text-align: center; display: none;">
   <div id="label2" style="margin-bottom: 6px; font-weight: bold;"></div>
@@ -228,6 +228,7 @@
             containerId: 'myTreeview2',
             data: treeData,
             searchEnabled: true,
+            searchPlaceholder: 'Custom Text Search here...',
             initiallyExpanded: false,
             multiSelectEnabled: true,
           onSelectionChange: (selectedNodes) => {

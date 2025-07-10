@@ -40,6 +40,7 @@
                 containerId: null,
                 data: [],
                 searchEnabled: false,
+                searchPlaceholder: 'Search tree...',
                 initiallyExpanded: false,
                 multiSelectEnabled: false,
                 onSelectionChange: null,
@@ -142,7 +143,7 @@
                 this.treeSearchInput = document.createElement('input');
                 this.treeSearchInput.type = 'text';
                 this.treeSearchInput.id = `treeSearch-${this.options.containerId}`;
-                this.treeSearchInput.placeholder = 'Search tree...';
+                this.treeSearchInput.placeholder = this.treeSearchInput.placeholder = this.options.searchPlaceholder;
                 this.treeSearchInput.classList.add('treeview-search-input');
                 this.treeviewContainer.appendChild(this.treeSearchInput);
 
