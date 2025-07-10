@@ -79,8 +79,8 @@ Alternatively you could also embed them directly from GitHub
 Quercus.js expects your data to be an array of objects, where each object represents a node. Nodes can have `children`
 arrays for nesting.
 
-| **Key**     | **Type**         | **Optional** | **Description**                                                                                                                                     |
-|-------------|------------------|--------------|-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Key**     | **Type**         | **Optional** | **Description**                                                                                                                                    |
+|-------------|------------------|--------------|----------------------------------------------------------------------------------------------------------------------------------------------------|
 | `id`        | string           | Yes          | A unique identifier for the node. This is necessary if you intend to programmatically select or deselect nodes using `selectNodeById()`.           |
 | `name`      | string           | Yes          | The default text displayed as the node's label. This can be customized or overridden using the `onRenderNode` callback.                            |
 | `children`  | Array<Object>    | Yes          | An array of child node objects. If present, the node will be rendered as an expandable parent node.                                                |
