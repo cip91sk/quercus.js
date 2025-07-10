@@ -339,20 +339,20 @@ graph TD
     
     D --> E1{searchEnabled?}
     E1 -- Yes --> E2[Create Search Field]
-    E1 -- No --> F1
-    
-    F1{showSelectAllButton &&<br>multiSelectEnabled &&<br>nodeSelectionEnabled?}
+        
+    D --> F1{showSelectAllButton &&<br>multiSelectEnabled &&<br>nodeSelectionEnabled?}
     F1 -- Yes --> F2[Create Select All Button]
-    F1 -- No --> G1
-    
-    G1{showExpandCollapseAllButtons?}
+        
+    D --> G1{showExpandCollapseAllButtons?}
     G1 -- Yes --> G2[Create Expand/Collapse Buttons]
-    G1 -- No --> H
-    
-    H[Render Tree _renderTree]
+        
+    D --> H[Render Tree _renderTree]
     H --> I{initiallyExpanded?}
     I -- Yes --> J[Expand All Nodes]
-    I -- No --> K[Process Initial Selection]
+    H --> K{nodeSelectionEnabled}
+    K -- Yes --> L{multiSelectEnabled}
+    L -- Yes --> M[Process Initial Selection with multiple nodes]
+    L -- No --> N[Process Initial Selection with one node]
 
 ```
 

@@ -1,0 +1,23 @@
+graph TD
+    A[Treeview Constructor] --> B{containerId exists?}
+    B -- No --> B_ERR[Error: containerId required]
+    B -- Yes --> C[Initialize Container]
+    C --> D[Create Controls]
+    
+    D --> E1{searchEnabled?}
+    E1 -- Yes --> E2[Create Search Field]
+        
+    D --> F1{showSelectAllButton &&<br>multiSelectEnabled &&<br>nodeSelectionEnabled?}
+    F1 -- Yes --> F2[Create Select All Button]
+        
+    D --> G1{showExpandCollapseAllButtons?}
+    G1 -- Yes --> G2[Create Expand/Collapse Buttons]
+        
+    D --> H[Render Tree _renderTree]
+    H --> I{initiallyExpanded?}
+    I -- Yes --> J[Expand All Nodes]
+    H --> K{nodeSelectionEnabled}
+    K -- Yes --> L{multiSelectEnabled}
+    L -- Yes --> M[Process Initial Selection with multiple nodes]
+    L -- No --> N[Process Initial Selection with one node]
+
