@@ -140,16 +140,46 @@
         // Method to create all control elements (search, buttons)
         _createControls() {
             if (this.options.searchEnabled) {
+                // Create a wrapper for the search input and clear button
+                const searchInputWrapper = document.createElement('div');
+                searchInputWrapper.classList.add('treeview-search-input-wrapper');
+                this.treeviewContainer.appendChild(searchInputWrapper);
+
                 this.treeSearchInput = document.createElement('input');
                 this.treeSearchInput.type = 'text';
                 this.treeSearchInput.id = `treeSearch-${this.options.containerId}`;
-                this.treeSearchInput.placeholder = this.treeSearchInput.placeholder = this.options.searchPlaceholder;
+                this.treeSearchInput.placeholder = this.options.searchPlaceholder;
                 this.treeSearchInput.classList.add('treeview-search-input');
-                this.treeviewContainer.appendChild(this.treeSearchInput);
+                searchInputWrapper.appendChild(this.treeSearchInput);
 
+                // Create the clear button
+                const clearButton = document.createElement('span');
+                clearButton.classList.add('treeview-search-clear');
+                clearButton.textContent = '✕'; // Unicode 'X' character
+                searchInputWrapper.appendChild(clearButton);
+
+                // Event listener for the search input
                 this.treeSearchInput.addEventListener('input', (event) => {
                     this._searchTree(event.target.value);
+                    // Show/hide clear button based on input value
+                    if (event.target.value.length > 0) {
+                        clearButton.style.display = 'block';
+                    } else {
+                        clearButton.style.display = 'none';
+                    }
                 });
+
+                // Event listener for the clear button
+                clearButton.addEventListener('click', () => {
+                    this.treeSearchInput.value = ''; // Clear the input field
+                    this._searchTree(''); // Trigger search with empty string
+                    clearButton.style.display = 'none'; // Hide the clear button
+                });
+
+                // Initially hide the clear button if the input is empty
+                if (this.treeSearchInput.value.length === 0) {
+                    clearButton.style.display = 'none';
+                }
             }
 
             const buttonContainer = document.createElement('div');

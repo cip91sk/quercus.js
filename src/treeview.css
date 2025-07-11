@@ -11,16 +11,43 @@
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
+/* Wrapper for search input and clear button */
+.treeview-search-input-wrapper {
+    position: relative;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+}
+
 /* Search input specific to the library */
 .treeview-search-input {
-    width: calc(100% - 20px);
-    padding: 8px;
-    margin-bottom: 15px;
+    width: 100%;
+    padding: 8px 30px 8px 8px;
     border: 1px solid #ccc;
     border-radius: 4px;
     box-sizing: border-box;
     font-size: 0.9em;
 }
+
+/* Styling for the clear button */
+.treeview-search-clear {
+    position: absolute;
+    right: 8px; /* Position from the right edge of the wrapper */
+    top: 50%; /* Vertically center */
+    transform: translateY(-50%); /* Adjust for true vertical centering */
+    cursor: pointer;
+    color: #888;
+    font-size: 1.2em; /* Slightly larger 'x' */
+    border: none;
+    padding: 0;
+    line-height: 1; /* Ensure consistent vertical alignment */
+    display: none; /* Hidden by default, shown by JS when text is present */
+}
+
+.treeview-search-clear:hover {
+    color: #555;
+}
+
 
 /* Tree structure styling */
 .custom-treeview-wrapper ul {
