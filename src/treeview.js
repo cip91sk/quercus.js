@@ -600,7 +600,7 @@
                 }
                 if (expander) expander.textContent = '-';
             });
-        }git c
+        }
 
         // Public method to set new data
         setData(newData) {
