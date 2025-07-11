@@ -17,19 +17,21 @@
  * Option to display checkboxes for node selection, positioned between expander and label.
  * Support for initial selection via data and programmatic selection via selectNodeById.
  * Individual node selectable property to control if a node can be selected.
+ * Option to define the key for the node's display name (e.g., 'label', 'appellation' instead of 'name').
  */
 (function () { // Anonymous IIFE for encapsulation
 
     /**
      * Helper function to get the node's display name for internal use (e.g., search or selection callback).
-     * This now relies on the original nodeData.name for consistency regardless of custom rendering.
+     * This now relies on the original nodeData and the configured nodeNameKey for consistency regardless of custom rendering.
      * @param {HTMLElement} liElement The <li> DOM element representing the node.
+     * @param {string} nodeNameKey The key to use for retrieving the node's name from its data.
      * @returns {string} The node's name from its original data.
      */
-    function getDisplayNameFromNodeElement(liElement) {
+    function getDisplayNameFromNodeElement(liElement, nodeNameKey) {
         try {
             const nodeData = JSON.parse(liElement.dataset.nodeData);
-            return nodeData.name || ''; // Use nodeData.name for display name
+            return nodeData[nodeNameKey] || nodeData.name || ''; // Use nodeNameKey, fallback to 'name', then empty string
         } catch (e) {
             console.error("Quercus.js: Error parsing node data for display name:", e);
             return 'Unnamed Node';
@@ -52,7 +54,8 @@
                 showExpandCollapseAllButtons: false,
                 nodeSelectionEnabled: true,
                 cascadeSelectChildren: false,
-                checkboxSelectionEnabled: false
+                checkboxSelectionEnabled: false,
+                nodeNameKey: 'name'
             };
             Object.assign(this.options, options);
 
@@ -353,13 +356,13 @@
                         console.error("Quercus.js: Error in custom node renderer:", e);
                         const nodeTextSpan = document.createElement('span'); // Fallback to default text
                         nodeTextSpan.classList.add('treeview-node-text');
-                        nodeTextSpan.textContent = node.name;
+                        nodeTextSpan.textContent = node[this.options.nodeNameKey] || node.name; // Use nodeNameKey
                         nodeContentWrapper.appendChild(nodeTextSpan);
                     }
                 } else {
                     const nodeTextSpan = document.createElement('span');
                     nodeTextSpan.classList.add('treeview-node-text');
-                    nodeTextSpan.textContent = node.name;
+                    nodeTextSpan.textContent = node[this.options.nodeNameKey] || node.name; // Use nodeNameKey
                     nodeContentWrapper.appendChild(nodeTextSpan);
                 }
 
@@ -482,7 +485,7 @@
                 return; // Cannot proceed if data is malformed
             }
             if (nodeData.selectable === false) {
-                console.warn(`Quercus.js: Node '${nodeData.name}' (ID: ${nodeData.id}) is not selectable.`);
+                console.warn(`Quercus.js: Node '${nodeData[this.options.nodeNameKey] || nodeData.name}' (ID: ${nodeData.id}) is not selectable.`);
                 return;
             }
 
@@ -600,7 +603,7 @@
                         return JSON.parse(nodeElement.dataset.nodeData);
                     } catch (e) {
                         console.error("Quercus.js: Error parsing selected node data:", e);
-                        return {id: nodeElement.dataset.id, name: getDisplayNameFromNodeElement(nodeElement)};
+                        return {id: nodeElement.dataset.id, name: getDisplayNameFromNodeElement(nodeElement, this.options.nodeNameKey)}; // Use nodeNameKey
                     }
                 });
                 this.options.onSelectionChange(selectedData);
@@ -667,7 +670,7 @@
 
             allListItems.forEach(item => {
                 const nodeData = JSON.parse(item.dataset.nodeData);
-                const searchableText = nodeData.name || '';
+                const searchableText = nodeData[this.options.nodeNameKey] || nodeData.name || ''; // Use nodeNameKey for search
 
                 if (searchableText.toLowerCase().includes(searchTerm.toLowerCase())) {
                     matchingNodes.add(item);
@@ -762,7 +765,7 @@
                     return;
                 }
                 if (nodeData.selectable === false && shouldSelect) {
-                    console.warn(`Quercus.js: Node '${nodeData.name}' (ID: ${nodeData.id}) is not selectable; cannot select programmatically.`);
+                    console.warn(`Quercus.js: Node '${nodeData[this.options.nodeNameKey] || nodeData.name}' (ID: ${nodeData.id}) is not selectable; cannot select programmatically.`);
                     return;
                 }
                 this._selectNode(nodeElement, shouldSelect);
@@ -781,7 +784,7 @@
                     return JSON.parse(nodeElement.dataset.nodeData);
                 } catch (e) {
                         console.error("Quercus.js: Error parsing selected node data:", e);
-                        return {id: nodeElement.dataset.id, name: getDisplayNameFromNodeElement(nodeElement)};
+                        return {id: nodeElement.dataset.id, name: getDisplayNameFromNodeElement(nodeElement, this.options.nodeNameKey)}; // Use nodeNameKey
                 }
             });
             return selectedData;
