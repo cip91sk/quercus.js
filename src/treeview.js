@@ -522,50 +522,42 @@
 
         _searchTree(searchTerm) {
             const allListItems = this.treeviewContainer.querySelectorAll('li');
+
+            if (searchTerm === '') {
+                // When search is cleared, restore nodes to their initial expanded/collapsed state
+                allListItems.forEach(item => {
+                    item.classList.remove('hidden', 'highlight'); // Remove search-related classes
+
+                    const expander = item.querySelector('.treeview-expander');
+                    const childUl = item.querySelector('ul');
+
+                    if (item.classList.contains('has-children')) {
+                        // Restore initial expansion state
+                        if (this.options.initiallyExpanded) {
+                            item.classList.add('expanded');
+                            if (expander) expander.textContent = '-';
+                            if (childUl) childUl.style.height = 'auto'; // Ensure it's fully expanded
+                        } else {
+                            item.classList.remove('expanded');
+                            if (expander) expander.textContent = '+';
+                            if (childUl) childUl.style.height = ''; // Reset height to allow collapse transition from default CSS
+                        }
+                    }
+                    // For non-has-children, just ensure no expanded class or height is set.
+                });
+                return; // Exit the function after resetting
+            }
+
             const matchingNodes = new Set();
             const ancestorsToExpand = new Set();
 
-            if (searchTerm === '') {
-                allListItems.forEach(item => {
-                    item.classList.remove('hidden', 'highlight');
-                    if (item.classList.contains('has-children')) {
-                        const childUl = item.querySelector('ul');
-                        const expander = item.querySelector('.treeview-expander');
-                        if (childUl) {
-                            childUl.style.height = `${childUl.scrollHeight}px`;
-                            requestAnimationFrame(() => {
-                                childUl.style.height = '0px';
-                            });
-                            item.classList.remove('expanded');
-                            if (expander) expander.textContent = '+';
-                            childUl.addEventListener('transitionend', function handler() {
-                                childUl.removeEventListener('transitionend', handler);
-                                childUl.style.height = '';
-                            }, {once: true});
-                        }
-                    }
-                });
-                if (this.options.initiallyExpanded) {
-                    this.treeviewContainer.querySelectorAll('li.has-children > ul').forEach(ul => {
-                        ul.style.height = 'auto';
-                        const parentLi = ul.closest('li');
-                        if (parentLi) {
-                            parentLi.classList.add('expanded');
-                            const expander = parentLi.querySelector('.treeview-expander');
-                            if (expander) expander.textContent = '-';
-                        }
-                    });
-                }
-                return;
-            }
-
             allListItems.forEach(item => {
                 item.classList.remove('highlight');
-                item.classList.add('hidden');
+                item.classList.add('hidden'); // Hide all initially for search
                 const childUl = item.querySelector('ul');
                 const expander = item.querySelector('.treeview-expander');
                 if (childUl) {
-                    childUl.style.height = '0px';
+                    childUl.style.height = '0px'; // Collapse children for search
                     item.classList.remove('expanded');
                     if (expander) expander.textContent = '+';
                 }
@@ -604,11 +596,11 @@
                 const childUl = ancestor.querySelector('ul');
                 const expander = ancestor.querySelector('.treeview-expander');
                 if (childUl) {
-                    childUl.style.height = 'auto';
+                    childUl.style.height = 'auto'; // Expand ancestors
                 }
                 if (expander) expander.textContent = '-';
             });
-        }
+        }git c
 
         // Public method to set new data
         setData(newData) {
