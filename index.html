@@ -166,6 +166,16 @@
     <pre id="output7" class="tree-output">[]</pre>
 </div>
 
+<p class="section-header">Treeview 8: Non selectable nodes via JSON data "selectable: false"</p>
+<div id="myTreeview8" class="my-treeview-container"></div>
+
+<div id="tree-output8" style="text-align: center;">
+    <button class="treeview-control-button" onclick="tree7.selectNodeById('videos-root', true)">Select Videos</button>
+    <button class="treeview-control-button" onclick="tree7.selectNodeById('videos-root', false)">Deselect Videos</button>
+    <div id="label8" style="margin-bottom: 6px; margin-top: 12px; font-weight: bold;">0 Nodes selected:</div>
+    <pre id="output8" class="tree-output">[]</pre>
+</div>
+
 
 <script src="src/treeview.js"></script>
 
@@ -323,8 +333,7 @@
             data: treeData,
             searchEnabled: false,
             initiallyExpanded: false,
-            multiSelectEnabled: false, // Must be false for cascadeSelectChildren to apply as per your request
-            nodeSelectionEnabled: true, // Ensure node selection is enabled
+            multiSelectEnabled: false, // Must be false for cascadeSelectChildren with single select
             cascadeSelectChildren: true, // Enable cascading selection
             onSelectionChange: (selectedNodes) => {
                 const names = selectedNodes.map(n => `"${n.name}"`);
@@ -348,7 +357,6 @@
             searchEnabled: true,
             initiallyExpanded: false,
             multiSelectEnabled: true, // Checkboxes typically imply multi-select
-            nodeSelectionEnabled: true, // Must be true for checkboxes to work
             checkboxSelectionEnabled: true, // Enable checkbox selection
             showSelectAllButton: true, // Select All button now applies to checkboxes
             onSelectionChange: (selectedNodes) => {
@@ -373,7 +381,6 @@
             searchEnabled: false,
             initiallyExpanded: true,
             multiSelectEnabled: true, // Must be true for multiple cascading children
-            nodeSelectionEnabled: true, // Ensure node selection is enabled
             cascadeSelectChildren: true, // Enable cascading selection
             onSelectionChange: (selectedNodes) => {
                 const names = selectedNodes.map(n => `"${n.name}"`);
@@ -468,6 +475,87 @@
             }
 
 
+        });
+
+        //data for preselected nodes
+        const treeDataNonSelectable = [
+            {
+                id: 'doc-root',
+                name: 'Documents',
+                type: 'folder',
+                status: 'active',
+                description: 'All company documents',
+                selectable: false,
+                children: [
+                    {
+                        id: 'doc-work',
+                        name: 'Work',
+                        type: 'folder',
+                        status: 'active',
+                        children: [
+                            {
+                                id: 'doc-alpha',
+                                name: 'Project Alpha',
+                                type: 'file',
+                                status: 'active',
+                                size: '1.2MB'
+                            },
+                            {id: 'doc-beta', name: 'Project Beta', type: 'file', status: 'inactive', size: '0.8MB'},
+                            {
+                                id: 'doc-notes',
+                                name: 'Meeting Notes',
+                                type: 'file',
+                                status: 'active',
+                                lastModified: '2023-01-15'
+                            }
+                        ]
+                    },
+                    {
+                        id: 'doc-personal',
+                        name: 'Personal',
+                        type: 'folder',
+                        status: 'active',
+                        children: [
+                            {id: 'doc-vacation', name: 'Vacation Photos', type: 'image', status: 'active'},
+                            {id: 'doc-resumes', name: 'Resumes', type: 'file', status: 'active'}
+                        ]
+                    },
+                    {id: 'doc-inbox', name: 'Inbox', type: 'folder', status: 'inactive'}
+                ]
+            },
+            {
+                id: 'dl-root',
+                name: 'Downloads',
+                type: 'folder',
+                status: 'active',
+                selectable: false,
+                children: [
+                    {id: 'dl-software', name: 'Software', type: 'file', status: 'active'},
+                    {id: 'dl-archives', name: 'Archives', type: 'file', status: 'inactive'}
+                ]
+            },
+            {id: 'music-root', name: 'Music', type: 'folder', status: 'active', selectable: false,},
+            {id: 'videos-root', name: 'Videos', type: 'folder', status: 'inactive', selectable: false,}
+        ];
+
+        window.tree8 = new Treeview({
+            containerId: 'myTreeview8',
+            data: treeDataNonSelectable,
+            searchEnabled: false,
+            initiallyExpanded: true,
+            multiSelectEnabled: true,
+            checkboxSelectionEnabled: true, // Enable checkbox selection
+            showSelectAllButton: true,
+            onSelectionChange: (selectedNodes) => {
+                const names = selectedNodes.map(n => `"${n.name}"`);
+                const label = document.getElementById('label8');
+                const output = document.getElementById('output8');
+                const count = names.length;
+                const nodeWord = count === 1 ? 'Node' : 'Nodes';
+                const countLabel = `${count} ${nodeWord} selected`
+                label.textContent = `${countLabel}:`;
+                output.textContent = `[${names.join(', ')}]`;
+            }
         });
 
     });

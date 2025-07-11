@@ -24,19 +24,19 @@ Here you can find a **[Live Demo](https://stefaneichert.github.io/quercus.js/)**
 ---
 
 Features
-
-* **Hierarchical Data Display:** Visually represents nested JSON data.
-* **Dedicated Expand/Collapse:** Clicking the `+`/`-` icon expands and collapses nodes.
-* **Node Selection:** Clicking on a node's text selects or deselects it. Multi-selection is enabled by configuration, no
-  special key (like Ctrl/Cmd) is needed.
-* **Search Functionality:** Quickly filter nodes based on their direct text content, highlighting matches and expanding
-  relevant paths.
-* **Smooth Animations:** Elegant expand and collapse transitions for a better user experience.
-* **Customizable:** Easy to style with standard CSS.
-* **Custom Node Rendering:** Nodes can be rendered using HTML and CSS based on their attributes.
-* **Controls:** Control buttons for selecting/deselecting, expanding/collapsing the nodes.
 * **Lightweight:** Only one .js and one .css file. No external dependencies.
-
+* **Hierarchical Data Display:** Renders nested JSON data into an interactive tree structure.
+* **Search Functionality:** Quickly filter tree nodes based on a search term, with a clear button to reset the search.
+* **Expand/Collapse Nodes:** Smooth animations for expanding and collapsing individual nodes.
+* **Multi-Node Selection:** Allows users to select multiple nodes simultaneously.
+* **Single-Node Selection:** Supports selecting only one node at a time.
+* **Cascading Selection:** Option to automatically select/deselect all child nodes when a parent node is selected (works with both single and multi-select modes).
+* **Checkbox Selection:** Display checkboxes next to nodes for intuitive selection, positioned between the expander icon and the node label.
+* **Programmatic Selection:** Select or deselect nodes by their ID via a public API.
+* **Customizable Node Rendering:** Provides a callback function (onRenderNode) to allow developers to define how each node's content is displayed, including custom icons, descriptions, and statuses.
+* **Global Control Buttons:** Optional "Select All/Deselect All" and "Expand All/Collapse All" buttons for quick tree manipulation.
+* **Disable Node Selection:** Ability to disable selection for the entire tree (nodeSelectionEnabled: false).
+* **Individual Node Selectability:** Control the selectable property for individual nodes in your data, preventing them from being selected if set to false. Non-selectable nodes are visually dimmed and non-interactive for selection.
 ---
 
 ## Installation
@@ -79,12 +79,13 @@ Alternatively you could also embed them directly from GitHub
 Quercus.js expects your data to be an array of objects, where each object represents a node. Nodes can have `children`
 arrays for nesting.
 
-| **Key**     | **Type**         | **Optional** | **Description**                                                                                                                                    |
-|-------------|------------------|--------------|----------------------------------------------------------------------------------------------------------------------------------------------------|
-| `id`        | string           | Yes          | A unique identifier for the node. This is necessary if you intend to programmatically select or deselect nodes using `selectNodeById()`.           |
-| `name`      | string           | Yes          | The label text displayed for the node. It can be customized using the `onRenderNode` callback. This field is also used for search functionality.   |
-| `children`  | Array<Object>    | Yes          | An array of child node objects. If present, the node will be rendered as an expandable parent node.                                                |
-| `selected`  | boolean          | Yes          | If set to `true`, the node will be initially selected when the treeview is rendered or when its data is updated via `setData()`.                   |
+| **Key**      | **Type**         | **Optional** | **Description**                                                                                                                                  |
+|--------------|------------------|--------------|--------------------------------------------------------------------------------------------------------------------------------------------------|
+| `id`         | string           | Yes          | A unique identifier for the node. This is necessary if you intend to programmatically select or deselect nodes using `selectNodeById()`.         |
+| `name`       | string           | Yes          | The label text displayed for the node. It can be customized using the `onRenderNode` callback. This field is also used for search functionality. |
+| `children`   | Array<Object>    | Yes          | An array of child node objects. If present, the node will be rendered as an expandable parent node.                                              |
+| `selected`   | boolean          | Yes          | If set to `true`, the node will be initially selected when the treeview is rendered or when its data is updated via `setData()`.                 |
+| `selectable` | boolean          | Yes          | If set to `false`, the node will not be selectable. E.g. for headings or root nodes.                                                             |
 
 Your data can contain any other keys and values, arrays etc. 
 
@@ -93,6 +94,7 @@ const myTreeData = [
     {
         id: '1',
         name: 'Documents',
+        selectable: false,
         children: [
             {
                 id: '1.1', name: 'Reports', children: [

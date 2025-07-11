@@ -83,6 +83,12 @@
     padding: 2px 0; /* Small vertical padding for clickable area */
 }
 
+/* Style for non-selectable nodes */
+.custom-treeview-wrapper .treeview-node-content.not-selectable {
+    cursor: default; /* Change cursor to default */
+    opacity: 0.6; /* Dim the text to indicate it's not interactive */
+}
+
 /* Style the actual text span for the node name */
 .custom-treeview-wrapper .treeview-node-text {
     flex-grow: 1; /* Allow text to take remaining space */
