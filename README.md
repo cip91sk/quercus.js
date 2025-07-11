@@ -79,13 +79,13 @@ Alternatively you could also embed them directly from GitHub
 Quercus.js expects your data to be an array of objects, where each object represents a node. Nodes can have `children`
 arrays for nesting.
 
-| **Key**      | **Type**         | **Optional** | **Description**                                                                                                                                  |
-|--------------|------------------|--------------|--------------------------------------------------------------------------------------------------------------------------------------------------|
-| `id`         | string           | Yes          | A unique identifier for the node. This is necessary if you intend to programmatically select or deselect nodes using `selectNodeById()`.         |
-| `name`       | string           | Yes          | The label text displayed for the node. It can be customized using the `onRenderNode` callback. This field is also used for search functionality. |
-| `children`   | Array<Object>    | Yes          | An array of child node objects. If present, the node will be rendered as an expandable parent node.                                              |
-| `selected`   | boolean          | Yes          | If set to `true`, the node will be initially selected when the treeview is rendered or when its data is updated via `setData()`.                 |
-| `selectable` | boolean          | Yes          | If set to `false`, the node will not be selectable. E.g. for headings or root nodes.                                                             |
+| **Key**      | **Type**         | **Optional** | **Description**                                                                                                                                                          |
+|--------------|------------------|--------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `id`         | string           | Yes          | A unique identifier for the node. This is necessary if you intend to programmatically select or deselect nodes using `selectNodeById()`.                                 |
+| `name`       | string           | Yes          | The label text displayed for the node. It can be customized using the `nodeNameKey` option or `onRenderNode` callback. This field is also used for search functionality. |
+| `children`   | Array<Object>    | Yes          | An array of child node objects. If present, the node will be rendered as an expandable parent node.                                                                      |
+| `selected`   | boolean          | Yes          | If set to `true`, the node will be initially selected when the treeview is rendered or when its data is updated via `setData()`.                                         |
+| `selectable` | boolean          | Yes          | If set to `false`, the node will not be selectable. E.g. for headings or root nodes.                                                                                     |
 
 Your data can contain any other keys and values, arrays etc. 
 
