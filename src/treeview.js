@@ -11,7 +11,7 @@
  * Optional "Select All/Deselect All" and "Expand All/Collapse All" buttons.
  * Custom Node Rendering via onRenderNode callback.
  * Option to disable node selection.
- * Option to cascade selection to children when a parent is selected.
+ * Option to cascade selection to children when a parent node is selected.
  * - If `multiSelectEnabled` is false, it's a single-select cascade (selects node and children, clears others).
  * - If `multiSelectEnabled` is true, it's a multi-select cascade (adds node and children to selection).
  * Option to display checkboxes for node selection, positioned between expander and label.
@@ -67,6 +67,7 @@
             this.invertSelectionButton = null;
             this.expandAllButton = null;
             this.collapseAllButton = null;
+            this._initialExpansionStates = new Map(); // Store initial expansion states for search reset
 
 
             this._initialize();
@@ -89,11 +90,29 @@
             this._createControls();
             this._renderTree(this.options.data, this.treeviewContainer);
 
+            // Apply initial expansion state after rendering
             if (this.options.initiallyExpanded) {
-                this.treeviewContainer.querySelectorAll('li.expanded > ul').forEach(ul => {
-                    ul.style.height = 'auto';
+                this.treeviewContainer.querySelectorAll('li.has-children').forEach(li => {
+                    li.classList.add('expanded');
+                    const expander = li.querySelector('.treeview-expander');
+                    if (expander) expander.textContent = '-';
+                    const childUl = li.querySelector('ul');
+                    if (childUl) {
+                        childUl.style.height = 'auto'; // Ensure it's fully expanded
+                    }
+                });
+            } else {
+                this.treeviewContainer.querySelectorAll('li.has-children').forEach(li => {
+                    li.classList.remove('expanded');
+                    const expander = li.querySelector('.treeview-expander');
+                    if (expander) expander.textContent = '+';
+                    const childUl = li.querySelector('ul');
+                    if (childUl) {
+                        childUl.style.height = ''; // Reset height to allow CSS to manage (collapse)
+                    }
                 });
             }
+
 
             // Handle initial selection from data after rendering the tree
             if (this.options.nodeSelectionEnabled) {
@@ -418,9 +437,7 @@
 
                 // Recursively render children if they exist
                 if (node.children && node.children.length > 0) {
-                    if (this.options.initiallyExpanded) {
-                        li.classList.add('expanded');
-                    }
+                    // Initial expansion state for children is handled in _initialize, not here
                     this._renderTree(node.children, li);
 
                     expanderOrPlaceholder.addEventListener('click', (event) => {
@@ -640,30 +657,68 @@
 
         _searchTree(searchTerm) {
             const allListItems = this.treeviewContainer.querySelectorAll('li');
+            const expandableListItems = this.treeviewContainer.querySelectorAll('li.has-children');
 
             if (searchTerm === '') {
-                // When search is cleared, restore nodes to their initial expanded/collapsed state
+                // Restore nodes to their initial expansion state
                 allListItems.forEach(item => {
                     item.classList.remove('hidden', 'highlight'); // Remove search-related classes
+                });
 
+                expandableListItems.forEach(item => {
+                    const nodeId = item.dataset.id;
                     const expander = item.querySelector('.treeview-expander');
                     const childUl = item.querySelector('ul');
 
-                    if (item.classList.contains('has-children')) {
-                        // Restore initial expansion state
+                    if (this._initialExpansionStates.has(nodeId)) {
+                        const wasExpanded = this._initialExpansionStates.get(nodeId);
+                        if (wasExpanded) {
+                            item.classList.add('expanded');
+                            if (expander) expander.textContent = '-';
+                            if (childUl) childUl.style.height = 'auto';
+                        } else {
+                            // Only trigger collapse animation if it's currently expanded and should be collapsed
+                            if (item.classList.contains('expanded')) {
+                                item.classList.remove('expanded');
+                                if (expander) expander.textContent = '+';
+                                if (childUl) {
+                                    childUl.style.height = `${childUl.scrollHeight}px`;
+                                    requestAnimationFrame(() => {
+                                        childUl.style.height = '0px';
+                                    });
+                                    childUl.addEventListener('transitionend', function handler() {
+                                        childUl.removeEventListener('transitionend', handler);
+                                        childUl.style.height = '';
+                                    }, { once: true });
+                                }
+                            } else {
+                                // If it was already collapsed, just ensure height is reset
+                                if (childUl) childUl.style.height = '';
+                            }
+                        }
+                    } else {
+                        // Fallback to initiallyExpanded if state wasn't captured (e.g., node added after search)
                         if (this.options.initiallyExpanded) {
                             item.classList.add('expanded');
                             if (expander) expander.textContent = '-';
-                            if (childUl) childUl.style.height = 'auto'; // Ensure it's fully expanded
+                            if (childUl) childUl.style.height = 'auto';
                         } else {
                             item.classList.remove('expanded');
                             if (expander) expander.textContent = '+';
-                            if (childUl) childUl.style.height = ''; // Reset height to allow collapse transition from default CSS
+                            if (childUl) childUl.style.height = '';
                         }
                     }
-                    // For non-has-children, just ensure no expanded class or height is set.
                 });
+                this._initialExpansionStates.clear(); // Clear stored states after restoring
                 return; // Exit the function after resetting
+            }
+
+            // Store current expansion states before modifying for search
+            if (this._initialExpansionStates.size === 0) { // Only store if not already stored from an active search
+                expandableListItems.forEach(item => {
+                    const nodeId = item.dataset.id;
+                    this._initialExpansionStates.set(nodeId, item.classList.contains('expanded'));
+                });
             }
 
             const matchingNodes = new Set();
@@ -725,14 +780,34 @@
             this.options.data = newData;
             this.treeviewContainer.innerHTML = '';
             this.selectedNodes.clear();
+            this._initialExpansionStates.clear(); // Clear stored states on new data
             this._createControls(); // Re-create search bar and buttons
             this._renderTree(this.options.data, this.treeviewContainer);
 
+            // Re-apply initial expansion state after setData
             if (this.options.initiallyExpanded) {
-                this.treeviewContainer.querySelectorAll('li.expanded > ul').forEach(ul => {
-                    ul.style.height = 'auto';
+                this.treeviewContainer.querySelectorAll('li.has-children').forEach(li => {
+                    li.classList.add('expanded');
+                    const expander = li.querySelector('.treeview-expander');
+                    if (expander) expander.textContent = '-';
+                    const childUl = li.querySelector('ul');
+                    if (childUl) {
+                        childUl.style.height = 'auto';
+                    }
+                });
+            } else {
+                this.treeviewContainer.querySelectorAll('li.has-children').forEach(li => {
+                    li.classList.remove('expanded');
+                    const expander = li.querySelector('.treeview-expander');
+                    if (expander) expander.textContent = '+';
+                    const childUl = li.querySelector('ul');
+                    if (childUl) {
+                        childUl.style.height = '';
+                    }
                 });
             }
+
+
             // Re-apply initial selections if any after setData
             if (this.options.nodeSelectionEnabled) {
                 const initiallySelectedNodeIds = [];
