@@ -189,6 +189,7 @@ const tree2 = new Treeview({
 | `onSelectionChange`            | `function`      | `null`           | A callback function executed whenever the selected node(s) change. It receives an `Array<Object>` of all currently selected node data objects. If `multiSelectEnabled` is `false`, this array will contain at most one object (or one parent node and its children if `cascadeSelectChildren` is enabled). |
 | `onRenderNode`                 | `function`      | `null`           | A callback function for custom node rendering. It receives `nodeData` (the node's data object) and `nodeContentWrapperElement` (the `div` to populate). See "Custom Node Rendering" section below.                                                                                                         |
 | `showSelectAllButton`          | `boolean`       | `false`          | If `true`, `multiSelectEnabled` is `true`, `nodeSelectionEnabled` is `true`, and `checkboxSelectionEnabled` is `true`, a "Select All" / "Deselect All" button will be displayed above the tree.                                                                                                            |
+| `showInvertSelectionButton`    | `boolean`       | `false`          | If `true`, an "Invert Selection" button will be displayed above the tree.                                                                                                                                                                                                                                  |
 | `showExpandCollapseAllButtons` | `boolean`       | `false`          | If `true`, "Expand All" and "Collapse All" buttons will be displayed above the tree, allowing bulk expansion or collapse of all nodes.                                                                                                                                                                     |
 | `nodeSelectionEnabled`         | `boolean`       | `true`           | If `true`, nodes can be selected. If `false`, node selection is disabled, and `onSelectionChange` will not be triggered by clicks on nodes or checkboxes.                                                                                                                                                  |
 | `cascadeSelectChildren`        | `boolean`       | `false`          | If `true` selecting a parent node will also select all of its children. If `multiSelectEnabled` is `false`, Clicking another node will deselect the previous group and select the new one along with its children. If `multiSelectEnabled` is `true` multiple selections are possible.                     |
@@ -209,6 +210,11 @@ You can interact with your `Treeview` instance after it's been initialized:
 * **`getSelectedNodes(): Array<Object>`**
   Returns an array containing the data objects of all currently selected nodes. The array will be empty if no nodes are
   selected.
+
+* **`getSelectedNodesAndChildrenValues(key)`**
+    * **Parameters**: `key` (string) - The key whose values are to be extracted from the node data.
+    * **Returns**: `Array<any>` - An array containing the values of the specified `key` from all currently selected nodes and all their recursive descendant nodes. Duplicates are included.
+    * **Description**: This method is useful for collecting specific data points from a selection, including all items nested under the selected parent nodes.
 
 * **`selectNodeById(id: string, shouldSelect: boolean = true): void`**
     Programmatically selects or deselects a specific node by its unique `id`.
