@@ -46,6 +46,7 @@
                 data: [],
                 searchEnabled: false,
                 searchPlaceholder: 'Search tree...',
+                showChildrenOnSearch: false,
                 initiallyExpanded: false,
                 multiSelectEnabled: false,
                 onSelectionChange: null,
@@ -750,6 +751,11 @@
                             ancestorsToExpand.add(parentLI);
                         }
                         parentUL = parentUL.parentElement.closest('ul');
+                    }
+                    if (this.options.showChildrenOnSearch) {
+                        for( const child of item.getElementsByTagName('li') ) {
+                            matchingNodes.add(child);
+                        }
                     }
                 }
             });
